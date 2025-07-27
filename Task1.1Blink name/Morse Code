@@ -1,0 +1,47 @@
+const int buttonPin = 2;
+const int ledPin = LED_BUILTIN;
+int dotTime = 200; // milliseconds
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT);
+}
+
+void dot() {
+  digitalWrite(ledPin, HIGH);
+  delay(dotTime);
+  digitalWrite(ledPin, LOW);
+  delay(dotTime);
+}
+
+void dash() {
+  digitalWrite(ledPin, HIGH);
+  delay(dotTime * 3);
+  digitalWrite(ledPin, LOW);
+  delay(dotTime);
+}
+
+void letterSpace() {
+  delay(dotTime * 3); // space between letters
+}
+
+void blinkMorse() {
+  // S
+  dot(); dot(); dot(); letterSpace();
+  // I
+  dot(); dot(); letterSpace();
+  // M
+  dash(); dash(); letterSpace();
+  // R
+  dot(); dash(); dot(); letterSpace();
+  // A
+  dot(); dash(); letterSpace();
+  // N
+  dash(); dot(); letterSpace();
+}
+
+void loop() {
+  if (digitalRead(buttonPin) == LOW) {
+    blinkMorse();
+  }
+}
