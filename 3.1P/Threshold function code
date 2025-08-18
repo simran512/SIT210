@@ -1,31 +1,48 @@
 let threshold = 50;
 
-// Extract number from payload, e.g. "Light: 85.00 lx"
-let matches = msg.payload.match(/([\d.]+)/);  
-let reading = matches ? parseFloat(matches[1]) : NaN;
-
-if (isNaN(reading)) {
-    node.warn(`Invalid reading: ${msg.payload}`);
-    return null;
+// --- Helper function: extract lux value ---
+function extractReading(payload) {
+    let matches = payload.match(/([\d.]+)/);
+    return matches ? parseFloat(matches[1]) : NaN;
 }
 
-// Get previous sunlight state (default false = no sunlight)
-let sunlightOn = context.get("sunlightOn") || false;
+// --- Helper function: check state change ---
+function checkSunlight(reading, threshold, sunlightOn) {
+    if (isNaN(reading)) {
+        return { state: "invalid", message: `Invalid reading: ${reading}` };
+    }
 
-if (reading > threshold && !sunlightOn) {
-    // Sunlight has just started
+    if (reading > threshold && !sunlightOn) {
+        return { state: "started", message: `☀ Sunlight started! Current reading: ${reading} lx (threshold: ${threshold} lx).` };
+    } else if (reading <= threshold && sunlightOn) {
+        return { state: "stopped", message: `🌙 Sunlight stopped! Current reading: ${reading} lx (threshold: ${threshold} lx).` };
+    } else {
+        return { state: "nochange", message: null };
+    }
+}
+
+// --- Main Execution ---
+let reading = extractReading(msg.payload);
+let sunlightOn = context.get("sunlightOn") || false;
+let result = checkSunlight(reading, threshold, sunlightOn);
+
+if (result.state === "invalid") {
+    node.warn(result.message);
+    return null;
+
+} else if (result.state === "started") {
     context.set("sunlightOn", true);
     msg.topic = "Sunlight Started";
-    msg.payload = `☀ Sunlight started! Current reading: ${reading} lx (threshold: ${threshold} lx).`;
+    msg.payload = result.message;
     return msg;
 
-} else if (reading <= threshold && sunlightOn) {
-    // Sunlight has just stopped
+} else if (result.state === "stopped") {
     context.set("sunlightOn", false);
     msg.topic = "Sunlight Stopped";
-    msg.payload = `🌙 Sunlight stopped! Current reading: ${reading} lx (threshold: ${threshold} lx).`;
+    msg.payload = result.message;
     return msg;
+
 } else {
-    // No change in state → do nothing
+    // No state change
     return null;
 }
