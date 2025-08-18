@@ -1,0 +1,19 @@
+let threshold = 50;
+
+// Try to extract number from payload, e.g. "Light: 85.00 lx"
+let matches = msg.payload.match(/([\d.]+)/);  // regex: one or more digits or dot
+let reading = matches ? parseFloat(matches[1]) : NaN;
+
+if (isNaN(reading)) {
+    node.warn(Invalid reading: ${msg.payload});
+    return null;
+}
+
+if (reading > threshold) {
+    msg.topic = "Sensor Alert!";
+    msg.payload = ⚠ Warning! Light sensor reading is ${reading} lx, above threshold of ${threshold} lx.;
+    node.warn("Sending email alert...");
+    return msg;
+} else {
+    return null;
+}
