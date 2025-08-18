@@ -1,0 +1,26 @@
+#include <Wire.h>
+#include <BH1750.h>
+
+// Create a BH1750 object
+BH1750 lightMeter;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+
+  // Initialize the BH1750
+  if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
+    Serial.println("BH1750 sensor initialized successfully!");
+  } else {
+    Serial.println("Error initializing BH1750 sensor. Check wiring!");
+  }
+}
+
+void loop() {
+  float lux = lightMeter.readLightLevel();  // Read light level in lux
+  Serial.print("Light: ");
+  Serial.print(lux);
+  Serial.println(" lx");
+
+  delay(1000);  // Wait 1 second before next reading
+}
