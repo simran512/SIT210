@@ -1,0 +1,48 @@
+const int buttonPin = 2;      // Push button pin
+const int pirPin    = 3;      // PIR motion sensor pin
+const int led1Pin   = 4;      // LED1 controlled by button
+const int led2Pin   = 5;      // LED2 controlled by PIR sensor
+
+// LED states (must be volatile for interrupts)
+volatile bool led1State = LOW;
+volatile bool led2State = LOW;
+
+// ISR for button interrupt
+void handleButtonInterrupt() {
+  led1State = !led1State;                // Toggle LED1
+  digitalWrite(led1Pin, led1State);
+  Serial.println("Interrupt: Button pressed -> LED1 toggled");
+}
+
+// ISR for PIR interrupt
+void handlePIRInterrupt() {
+  led2State = !led2State;                // Toggle LED2
+  digitalWrite(led2Pin, led2State);
+  Serial.println("Interrupt: Motion detected -> LED2 toggled");
+}
+
+void setup() {
+  // Serial Monitor
+  Serial.begin(9600);
+  while (!Serial); // Wait for Serial to be ready
+
+  // Pin modes
+  pinMode(buttonPin, INPUT_PULLUP); // Button with pull-up
+  pinMode(pirPin, INPUT);           // PIR sensor (digital HIGH when motion detected)
+  pinMode(led1Pin, OUTPUT);
+  pinMode(led2Pin, OUTPUT);
+
+  // Initial LED states
+  digitalWrite(led1Pin, led1State);
+  digitalWrite(led2Pin, led2State);
+
+  // Attach interrupts
+  attachInterrupt(digitalPinToInterrupt(buttonPin), handleButtonInterrupt, FALLING);
+  attachInterrupt(digitalPinToInterrupt(pirPin), handlePIRInterrupt, RISING);
+
+  Serial.println("System ready. Press button or trigger motion.");
+}
+
+void loop() {
+  // Nothing here, all handled by interrupts
+}
