@@ -1,0 +1,57 @@
+import RPi.GPIO as GPIO
+import tkinter as tk
+
+# Setup GPIO pins
+GPIO.setmode(GPIO.BOARD)
+RED_PIN = 11
+GREEN_PIN = 13
+YELLOW_PIN = 15
+
+GPIO.setup(RED_PIN, GPIO.OUT)
+GPIO.setup(GREEN_PIN, GPIO.OUT)
+GPIO.setup(YELLOW_PIN, GPIO.OUT)
+
+# Initialize PWM
+red_pwm = GPIO.PWM(RED_PIN, 100)
+green_pwm = GPIO.PWM(GREEN_PIN, 100)
+yellow_pwm = GPIO.PWM(YELLOW_PIN, 100)
+
+red_pwm.start(0)
+green_pwm.start(0)
+yellow_pwm.start(0)
+
+def update_pwm():
+    red_pwm.ChangeDutyCycle(red_slider.get())
+    green_pwm.ChangeDutyCycle(green_slider.get())
+    yellow_pwm.ChangeDutyCycle(yellow_slider.get())
+
+def close_app():
+    red_pwm.stop()
+    green_pwm.stop()
+    yellow_pwm.stop()
+    GPIO.cleanup()
+    root.destroy()
+
+# GUI window
+root = tk.Tk()
+root.title("LED Intensity Control")
+
+# Red slider
+tk.Label(root, text="Red LED Intensity").pack()
+red_slider = tk.Scale(root, from_=0, to=100, orient=tk.HORIZONTAL, command=lambda x: update_pwm())
+red_slider.pack()
+
+# Green slider
+tk.Label(root, text="Green LED Intensity").pack()
+green_slider = tk.Scale(root, from_=0, to=100, orient=tk.HORIZONTAL, command=lambda x: update_pwm())
+green_slider.pack()
+
+# Yellow slider
+tk.Label(root, text="Yellow LED Intensity").pack()
+yellow_slider = tk.Scale(root, from_=0, to=100, orient=tk.HORIZONTAL, command=lambda x: update_pwm())
+yellow_slider.pack()
+
+# Exit button
+tk.Button(root, text="Exit", command=close_app).pack(pady=10)
+
+root.mainloop()
