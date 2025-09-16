@@ -1,0 +1,51 @@
+import RPi.GPIO as GPIO
+import tkinter as tk
+
+# Setup GPIO pins
+GPIO.setmode(GPIO.BOARD)
+RED_PIN = 11
+GREEN_PIN = 13
+YELLOW_PIN = 15
+
+GPIO.setup(RED_PIN, GPIO.OUT)
+GPIO.setup(GREEN_PIN, GPIO.OUT)
+GPIO.setup(YELLOW_PIN, GPIO.OUT)
+
+# Turn all LEDs off initially
+GPIO.output(RED_PIN, GPIO.LOW)
+GPIO.output(GREEN_PIN, GPIO.LOW)
+GPIO.output(YELLOW_PIN, GPIO.LOW)
+
+def led_control():
+    choice = var.get()
+    # Turn off all LEDs
+    GPIO.output(RED_PIN, GPIO.LOW)
+    GPIO.output(GREEN_PIN, GPIO.LOW)
+    GPIO.output(YELLOW_PIN, GPIO.LOW)
+    
+    if choice == "Red":
+        GPIO.output(RED_PIN, GPIO.HIGH)
+    elif choice == "Green":
+        GPIO.output(GREEN_PIN, GPIO.HIGH)
+    elif choice == "Yellow":
+        GPIO.output(YELLOW_PIN, GPIO.HIGH)
+
+def close_app():
+    GPIO.cleanup()
+    root.destroy()
+
+# GUI window
+root = tk.Tk()
+root.title("LED Control GUI")
+
+var = tk.StringVar(value="None")
+
+# Radio buttons
+tk.Radiobutton(root, text="Red LED", variable=var, value="Red", command=led_control).pack(anchor=tk.W)
+tk.Radiobutton(root, text="Green LED", variable=var, value="Green", command=led_control).pack(anchor=tk.W)
+tk.Radiobutton(root, text="Yellow LED", variable=var, value="Yellow", command=led_control).pack(anchor=tk.W)
+
+# Exit button
+tk.Button(root, text="Exit", command=close_app).pack(pady=10)
+
+root.mainloop()
