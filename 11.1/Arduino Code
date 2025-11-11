@@ -1,0 +1,73 @@
+int gasPin = A0;
+int trigPin = 6;
+int echoPin = 5;
+
+int redLED = 9;
+int yellowLED = 10;
+int greenLED = 11;
+
+int buzzer = 3;
+
+int gasThreshold = 300;     // Default
+int distThreshold = 20;     // Default
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pinMode(redLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+}
+
+void loop() {
+
+  // GAS 
+  int gasValue = analogRead(gasPin);
+
+  // DISTANCE 
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH);
+  int distance = duration * 0.034 / 2;
+
+  // SEND SENSOR DATA TO PI 
+  Serial.print(gasValue);
+  Serial.print(",");
+  Serial.println(distance);
+
+  // RECEIVE THRESHOLD UPDATES 
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+
+    if (cmd.startsWith("G")) gasThreshold = cmd.substring(1).toInt();
+    if (cmd.startsWith("D")) distThreshold = cmd.substring(1).toInt();
+  }
+
+  // ALERT LOGIC 
+  if (gasValue > gasThreshold || distance < distThreshold) {
+    digitalWrite(redLED, HIGH);
+    digitalWrite(yellowLED, LOW);
+    digitalWrite(greenLED, LOW);
+    digitalWrite(buzzer, HIGH);
+  } else if (gasValue > (gasThreshold * 0.7)) {
+    digitalWrite(redLED, LOW);
+    digitalWrite(yellowLED, HIGH);
+    digitalWrite(greenLED, LOW);
+    digitalWrite(buzzer, LOW);
+  } else {
+    digitalWrite(redLED, LOW);
+    digitalWrite(yellowLED, LOW);
+    digitalWrite(greenLED, HIGH);
+    digitalWrite(buzzer, LOW);
+  }
+
+  delay(200);
+}
