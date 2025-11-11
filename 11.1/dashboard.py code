@@ -1,0 +1,49 @@
+import serial
+import threading
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO
+
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+
+app = Flask(__name__)
+socketio = SocketIO(app)
+
+gas_threshold = 300
+distance_threshold = 20
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/update", methods=["POST"])
+def update():
+    global gas_threshold, distance_threshold
+gas = request.form.get("gas")
+    dist = request.form.get("distance")
+
+    # Only update if user actually entered something
+    if gas and gas.isdigit():
+        gas_threshold = int(gas)
+        ser.write(f"G{gas_threshold}\n".encode())
+
+    if dist and dist.isdigit():
+        distance_threshold = int(dist)
+        ser.write(f"D{distance_threshold}\n".encode())
+
+    return ("", 204)
+
+def read_serial():
+    while True:
+        try:
+            data = ser.readline().decode().strip()
+            if data:
+gas, dist = data.split(",")
+                socketio.emit("sensor_update", {"gas": gas, "distance": dist})
+        except:
+            pass
+
+threading.Thread(target=read_serial, daemon=True).start()
+
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0", port=5000)
+
