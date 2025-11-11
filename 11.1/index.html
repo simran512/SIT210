@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Safety Helmet Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></scrip>
+</head>
+
+<body style="font-family: Arial; margin: 40px;">
+<h1>Safety Helmet Live Dashboard</h1>
+
+<h3>Live Sensor Readings:</h3>
+<p><b>Gas Level:</b> <span id="gas">--</span></p>
+<p><b>Distance:</b> <span id="distance">--</span> cm</p>
+
+<h3>Adjust Thresholds:</h3>
+<form action="/update" method="post">
+  Gas Threshold:
+  <input type="number" name="gas" value="300" required><br><br>
+ Distance Threshold (cm):
+  <input type="number" name="distance" value="20" required><br><br>
+
+  <button type="submit">Update Thresholds</button>
+</form>
+
+
+<script>
+  const socket = io();
+  socket.on("sensor_update", data => {
+    document.getElementById("gas").innerText = data.gas;
+    document.getElementById("distance").innerText = data.distance;
+  });
+</script>
+
+</body>
+</html>
